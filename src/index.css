@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --ink: #ffffff;
+    --sub: #a2a9b8;
+    --nav: #fbfdff;
+    --foot: #f4f8fd;
+    --hair: rgba(196, 214, 232, 0.72);
+    --cyan: #38bdf8;
+    --violet: #a855f7;
+    --safe: #10b981;
+    --warn: #f59e0b;
+    --critical: #ef4444;
+  }
+
+  body {
+    background-color: #02060f;
+    color: var(--ink);
+    font-family: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@keyframes aura-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: aura-spin 10s linear infinite;
+}
+
+.animate-spin-medium {
+  animation: aura-spin 6s linear infinite;
+}
+
+.animate-spin-fast {
+  animation: aura-spin 3s linear infinite;
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.03) 100%),
+              linear-gradient(180deg, rgba(6, 12, 24, 0.75) 0%, rgba(6, 12, 24, 0.88) 100%);
+  backdrop-filter: blur(24px) saturate(0.8);
+  -webkit-backdrop-filter: blur(24px) saturate(0.8);
+  border: 1px solid rgba(196, 214, 232, 0.22);
+}
+
+.glass-pill {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%),
+              rgba(6, 12, 24, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(196, 214, 232, 0.35);
+}

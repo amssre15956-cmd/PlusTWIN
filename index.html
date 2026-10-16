@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pulse-Twin AI — Clinical Digital Twin Console</title>
+  <meta name="description" content="Doctor-facing clinical monitoring and 30-minute hypoxemia deterioration prediction console with 3D Real-Life Lung and Heart Simulator card and synthetic digital twin.">
+  <meta property="og:title" content="Pulse-Twin AI — Clinical Digital Twin Console">
+  <meta property="og:description" content="Doctor-facing clinical monitoring and 30-minute hypoxemia deterioration prediction console with 3D Real-Life Lung and Heart Simulator card and synthetic digital twin.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Google Fonts Sora Variable Weight -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..900&display=swap" rel="stylesheet">
+
+  <style>
+    @font-face{
+      font-family:'Sora';
+      src:url(assets/fonts/sora-variable.ttf) format('truetype-variations');
+      font-weight:100 900;
+      font-style:normal;
+      font-display:block;
+    }
+
+    /* 3. DESIGN TOKENS */
+    :root{
+      --ink:#ffffff;
+      --sub:#a2a9b8;
+      --nav:#fbfdff;
+      --foot:#f4f8fd;
+      --hair:rgba(196,214,232,.72);
+      --chev:rgba(214,232,250,.90);
+      --navdim:#e8ecf0;
+      --feat:#e2ebf5;
+      --veil:6,10,18;
+
+      --cyan:#38bdf8;
+      --violet:#a855f7;
+      --safe:#10b981;
+      --warn:#f59e0b;
+      --critical:#ef4444;
+
+      /* 4. SCALE SYSTEM */
+      --cover:max(calc(100vw / 1536), calc(100vh / 1024));
+      --fit:calc(100vh / 910);
+      --u:min(var(--cover), var(--fit));
+      --blur:calc(var(--u)*26);
+      --glow:calc(var(--u)*34);
+      --hairline:max(1px, calc(var(--u)*1.6));
+    }
+
+    @supports (height:100dvh){
+      :root{
+        --cover:max(calc(100vw / 1536), calc(100dvh / 1024));
+        --fit:calc(100dvh / 910);
+      }
+    }
+
+    *,*::before,*::after{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+
+    html,body{
+      height:100%;
+      background:#02060f;
+      overflow:hidden;
+    }
+
+    body{
+      font-family:'Sora',system-ui,-apple-system,'Segoe UI',sans-serif;
+      color:var(--ink);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      text-rendering:geometricPrecision;
+    }
+
+    a{color:inherit;text-decoration:none}
+    button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+    a:focus-visible,button:focus-visible,select:focus-visible{
+      outline:2px solid #9fe0ff;
+      outline-offset:3px;
+      border-radius:4px;
+    }
+
+    /* 5. BACKGROUND AND VEIL */
+    .art{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:50% 50%;
+      z-index:0;
+      user-select:none;
+      -webkit-user-drag:none;
+      pointer-events:none;
+      background:#03060c;
+    }
+
+    .veil{
+      position:fixed;
+      inset:0;
+      z-index:1;
+      pointer-events:none;
+      background:
+        radial-gradient(140% 60% at 50% 40%,
+          rgba(var(--veil),.18) 0%,
+          rgba(var(--veil),.06) 50%,
+          rgba(var(--veil),0) 100%),
+        linear-gradient(180deg,
+          rgba(var(--veil),0) 45%,
+          rgba(var(--veil),.12) 100%);
+    }
+
+    .bar,.console,.foot{
+      position:fixed;
+      z-index:2;
+    }
+
+    /* 6. COMPONENT SKIN */
+    .brand svg{fill:var(--ink);display:block}
+    .caret,.navarrow{
+      fill:none;
+      stroke:var(--nav);
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .navarrow{stroke-linecap:square;stroke-linejoin:miter}
+    .pill{
+      border:var(--hairline) solid var(--hair);
+      border-radius:999px;
+    }
+
+    /* Web3 Moving Chromatic Aura Light Border Keyframes */
+    @keyframes aura-beam-rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .aura-active {
+      position: relative;
+      overflow: hidden;
+    }
+    .aura-active::before {
+      content: '';
+      position: absolute;
+      inset: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(56, 189, 248, 0.75) 60deg,
+        rgba(168, 85, 247, 0.75) 120deg,
+        rgba(56, 189, 248, 0.35) 180deg,
+        transparent 240deg
+      );
+      animation: aura-beam-rotate 8s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.85;
+    }
+
+    .aura-active::after {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(6,12,24,.82) 0%, rgba(6,12,24,.92) 100%);
+      backdrop-filter: blur(var(--blur)) saturate(.6);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(.6);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .aura-active > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    .action,
+    .pill{
+      border-radius:999px;
+      background:
+        linear-gradient(180deg, rgba(6,12,22,0) 45%, rgba(6,12,22,.12) 78%, rgba(6,12,22,.28) 100%),
+        linear-gradient(90deg,
+          rgba(255,226,178,.17) 0%,
+          rgba(255,236,208,.07) 22%,
+          rgba(176,206,238,.03) 55%,
+          rgba(150,196,244,.09) 100%),
+        linear-gradient(90deg,
+          rgba(255,255,255,.24) 0%,
+          rgba(255,255,255,.17) 12%,
+          rgba(255,255,255,.11) 26%,
+          rgba(255,255,255,.07) 42%,
+          rgba(255,255,255,.05) 60%,
+          rgba(255,255,255,.04) 80%,
+          rgba(255,255,255,.04) 100%);
+      -webkit-backdrop-filter:blur(var(--blur)) saturate(.45);
+      backdrop-filter:blur(var(--blur)) saturate(.45);
+      box-shadow:
+        0 calc(var(--u)*-2) calc(var(--u)*20) rgba(255,224,176,.20),
+        0 0 var(--glow) rgba(168,204,252,.16),
+        inset 0 var(--hairline) 0 0 rgba(255,251,242,.45);
+    }
+
+    .action::before,
+    .pill::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:inherit;
+      padding:var(--hairline);
+      pointer-events:none;
+      background:
+        linear-gradient(180deg,
+          rgba(255,252,246,.95) 0%,
+          rgba(255,252,246,.20) 45%,
+          rgba(255,252,246,0) 78%),
+        linear-gradient(90deg,
+          rgba(255,228,182,.95) 0%,
+          rgba(250,236,210,.70) 12%,
+          rgba(226,230,234,.03) 32%,
+          rgba(214,226,240,.02) 62%,
+          rgba(200,228,250,.70) 90%,
+          rgba(186,224,247,.95) 100%);
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor;
+      mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+      mask-composite:exclude;
+    }
+
+    .panel{
+      position:relative;
+      border-radius:calc(var(--u)*22);
+      border:var(--hairline) solid rgba(196,214,232,.24);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.03) 100%),
+        linear-gradient(90deg, rgba(255,226,178,.04) 0%, rgba(150,196,244,.05) 100%),
+        linear-gradient(180deg, rgba(6,12,22,.65) 0%, rgba(6,12,22,.78) 100%);
+      -webkit-backdrop-filter:blur(var(--blur)) saturate(.45);
+      backdrop-filter:blur(var(--blur)) saturate(.45);
+      box-shadow:0 calc(var(--u)*14) calc(var(--u)*38) rgba(2,6,14,.45);
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* PER-ELEMENT VARIABLE WEIGHTS */
+    #word                 { font-variation-settings:'wght' 531; color:var(--ink); }
+    #about                { font-variation-settings:'wght' 506; color:var(--nav); }
+    #product              { font-variation-settings:'wght' 506; color:var(--nav); }
+    #solutions            { font-variation-settings:'wght' 506; color:var(--nav); }
+    #login                { font-variation-settings:'wght' 506; color:var(--nav); }
+    #contact              { font-variation-settings:'wght' 581; color:var(--navdim); }
+    #p-title,#f-title     { font-variation-settings:'wght' 424; color:var(--ink); }
+    #a-title,#s-title     { font-variation-settings:'wght' 424; color:var(--ink); }
+    #h-title,#m-title     { font-variation-settings:'wght' 424; color:var(--ink); }
+    #twin-title           { font-variation-settings:'wght' 424; color:var(--ink); }
+    #spo2-label,#hrv-label{ font-variation-settings:'wght' 446; color:var(--sub); }
+    #patient-meta         { font-variation-settings:'wght' 446; color:var(--sub); }
+    #forecast-range       { font-variation-settings:'wght' 446; color:var(--sub); }
+    #forecast-explanation { font-variation-settings:'wght' 446; color:var(--sub); }
+    #ack-label,#esc-label,#mute-label { font-variation-settings:'wght' 497; color:var(--ink); }
+    #forecast-number      { font-variation-settings:'wght' 424; color:var(--ink); }
+    #spo2-value,#hrv-value{ font-variation-settings:'wght' 424; color:var(--ink); }
+    #foot1,#foot2         { font-variation-settings:'wght' 521; color:var(--foot); }
+
+    .panel-title{
+      font-size:calc(var(--u)*21);
+      line-height:1.2;
+      margin-bottom:calc(var(--u)*10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    /* Vitals */
+    .vitals{
+      display:flex;
+      align-items:center;
+      gap:calc(var(--u)*28);
+      margin-top:calc(var(--u)*6);
+      margin-bottom:calc(var(--u)*10);
+    }
+    .vital{
+      display:flex;
+      flex-direction:column;
+    }
+    .vital-label{
+      font-size:calc(var(--u)*13);
+      text-transform:uppercase;
+      letter-spacing:0.04em;
+    }
+    .vital-value{
+      font-size:calc(var(--u)*44);
+      line-height:1;
+      font-variant-numeric:tabular-nums;
+    }
+    .vital-unit{
+      font-size:calc(var(--u)*14);
+      color:var(--sub);
+      margin-left:calc(var(--u)*2);
+    }
+    .patient-meta{
+      font-size:calc(var(--u)*12.5);
+      margin-top:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-top:1px solid rgba(196,214,232,.12);
+      padding-top:calc(var(--u)*8);
+    }
+
+    /* Forecast Panel */
+    .forecast-score{
+      display:flex;
+      align-items:baseline;
+      gap:calc(var(--u)*4);
+    }
+    .forecast-number{
+      font-size:calc(var(--u)*72);
+      line-height:1;
+      font-variant-numeric:tabular-nums;
+    }
+    .forecast-unit{
+      font-size:calc(var(--u)*22);
+      color:var(--sub);
+    }
+    .forecast-range{
+      font-size:calc(var(--u)*12.5);
+      margin-top:calc(var(--u)*4);
+      margin-bottom:calc(var(--u)*6);
+      font-variant-numeric:tabular-nums;
+    }
+    .forecast-explanation{
+      font-size:calc(var(--u)*12.5);
+      line-height:1.4;
+      margin-bottom:auto;
+    }
+    .calibration-badge{
+      align-self:flex-start;
+      font-size:calc(var(--u)*11);
+      color:var(--cyan);
+      background:rgba(56,189,248,.12);
+      border:1px solid rgba(56,189,248,.3);
+      border-radius:4px;
+      padding:calc(var(--u)*3) calc(var(--u)*8);
+      margin-top:calc(var(--u)*6);
+      font-variant-numeric:tabular-nums;
+    }
+
+    /* Dedicated 3D Digital Twin Component Card */
+    .twin-panel{
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .twin-viewport{
+      flex:1;
+      width:100%;
+      min-height:0;
+      position:relative;
+      cursor:grab;
+      border-radius:calc(var(--u)*12);
+      overflow:hidden;
+      background:radial-gradient(circle at 50% 50%, rgba(14,28,54,.4) 0%, rgba(2,6,15,.75) 100%);
+    }
+    .twin-viewport:active{
+      cursor:grabbing;
+    }
+    .twin-viewport canvas{
+      width:100% !important;
+      height:100% !important;
+      display:block;
+    }
+    .twin-hud-badge{
+      position:absolute;
+      top:calc(var(--u)*8);
+      left:calc(var(--u)*8);
+      z-index:5;
+      font-size:calc(var(--u)*10.5);
+      font-family:monospace;
+      background:rgba(6,12,24,.85);
+      border:1px solid rgba(56,189,248,.4);
+      padding:2px 8px;
+      border-radius:4px;
+      color:var(--cyan);
+      pointer-events:none;
+    }
+    .twin-filter-bar{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:calc(var(--u)*4);
+      margin-top:calc(var(--u)*8);
+    }
+    .card-filter-btn{
+      border-radius:999px;
+      padding:calc(var(--u)*3) calc(var(--u)*10);
+      font-size:calc(var(--u)*11);
+      font-weight:600;
+      color:var(--sub);
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(196,214,232,0.18);
+      transition:all 0.2s ease;
+      white-space:nowrap;
+    }
+    .card-filter-btn:hover{
+      color:var(--ink);
+      background:rgba(255,255,255,0.12);
+    }
+    .card-filter-btn.active{
+      color:var(--ink);
+      background:linear-gradient(90deg, rgba(56,189,248,.35) 0%, rgba(168,85,247,.35) 100%);
+      border:1px solid rgba(56,189,248,.6);
+      box-shadow:0 0 calc(var(--u)*12) rgba(56,189,248,.3);
+    }
+
+    /* Alerts Panel */
+    .alert-panel.critical-alert{
+      border-color:rgba(239,68,68,.7);
+      box-shadow:0 0 calc(var(--u)*30) rgba(239,68,68,.25);
+    }
+    .alert-message{
+      font-size:calc(var(--u)*12.5);
+      line-height:1.4;
+      color:var(--feat);
+      margin-bottom:calc(var(--u)*8);
+      min-height:calc(var(--u)*36);
+    }
+    .alert-actions{
+      display:flex;
+      gap:calc(var(--u)*6);
+      margin-bottom:calc(var(--u)*8);
+    }
+    .action{
+      flex:1;
+      position:relative;
+      padding:calc(var(--u)*6) calc(var(--u)*6);
+      font-size:calc(var(--u)*11.5);
+      text-align:center;
+      transition:transform 0.15s ease, opacity 0.15s ease;
+      white-space:nowrap;
+    }
+    .action:hover:not(:disabled){
+      transform:translateY(-1px);
+    }
+    .action:disabled{
+      opacity:0.45;
+      cursor:not-allowed;
+    }
+    .action.escalate{
+      background:
+        linear-gradient(180deg, rgba(239,68,68,0) 45%, rgba(239,68,68,.2) 100%),
+        linear-gradient(90deg, rgba(239,68,68,.25) 0%, rgba(245,158,11,.15) 100%),
+        rgba(6,12,22,.6);
+      box-shadow:0 0 calc(var(--u)*16) rgba(239,68,68,.3);
+    }
+    .intervention-picker{
+      display:flex;
+      flex-direction:column;
+      gap:calc(var(--u)*3);
+    }
+    .intervention-picker label{
+      font-size:calc(var(--u)*11);
+      color:var(--sub);
+    }
+    .intervention-picker select, .patient-selector select{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(196,214,232,.3);
+      border-radius:6px;
+      color:var(--ink);
+      font-family:inherit;
+      font-size:calc(var(--u)*11.5);
+      padding:calc(var(--u)*4) calc(var(--u)*6);
+      outline:none;
+      cursor:pointer;
+    }
+    .intervention-picker select option, .patient-selector select option{
+      background:#060c16;
+      color:#fff;
+    }
+    .action-status{
+      font-size:calc(var(--u)*11);
+      color:var(--cyan);
+      margin-top:calc(var(--u)*4);
+      min-height:calc(var(--u)*16);
+      font-variant-numeric:tabular-nums;
+    }
+
+    /* Charts */
+    .chart-frame{
+      flex:1;
+      width:100%;
+      height:calc(var(--u)*180);
+      min-height:calc(var(--u)*160);
+      position:relative;
+    }
+    .chart-frame svg{
+      width:100%;
+      height:100%;
+      display:block;
+      overflow:visible;
+    }
+    .chart-note{
+      font-size:calc(var(--u)*12);
+      color:var(--sub);
+      margin-top:calc(var(--u)*6);
+      font-style:italic;
+    }
+    .legend{
+      display:flex;
+      align-items:center;
+      gap:calc(var(--u)*18);
+      margin-top:calc(var(--u)*6);
+      font-size:calc(var(--u)*12);
+      color:var(--sub);
+    }
+    .legend-item{
+      display:inline-flex;
+      align-items:center;
+      gap:calc(var(--u)*6);
+    }
+    .legend-item .dot{
+      width:calc(var(--u)*8);
+      height:calc(var(--u)*8);
+      border-radius:50%;
+      display:inline-block;
+    }
+    .legend-item .dot.spo2{ background:var(--cyan); }
+    .legend-item .dot.hrv{ background:var(--violet); }
+    .legend-item .dot.threshold{
+      width:calc(var(--u)*14);
+      height:2px;
+      background:var(--critical);
+      border-radius:0;
+    }
+
+    /* Metrics Panel */
+    .metric-grid{
+      display:grid;
+      grid-template-columns:repeat(6, 1fr);
+      gap:calc(var(--u)*16);
+      flex:1;
+    }
+    .metric{
+      display:flex;
+      flex-direction:column;
+      gap:calc(var(--u)*2);
+    }
+    .metric-label{
+      font-size:calc(var(--u)*11);
+      color:var(--sub);
+      text-transform:uppercase;
+      letter-spacing:0.04em;
+    }
+    .metric-value{
+      font-size:calc(var(--u)*20);
+      font-variant-numeric:tabular-nums;
+      color:var(--ink);
+    }
+    .lead-time{
+      display:flex;
+      flex-direction:column;
+      padding:0 calc(var(--u)*18);
+      border-left:1px solid rgba(196,214,232,.18);
+      border-right:1px solid rgba(196,214,232,.18);
+      gap:calc(var(--u)*2);
+    }
+    .lead-time .metric-value{
+      font-size:calc(var(--u)*15);
+      white-space:nowrap;
+    }
+    .confusion{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:calc(var(--u)*2);
+    }
+    .matrix{
+      display:grid;
+      grid-template-columns:repeat(2, auto);
+      gap:calc(var(--u)*3) calc(var(--u)*10);
+      font-size:calc(var(--u)*12);
+      font-variant-numeric:tabular-nums;
+      color:var(--feat);
+    }
+
+    /* 7. ENTRANCE SEQUENCE */
+    @media (prefers-reduced-motion:no-preference){
+      :root{
+        --ent-line:cubic-bezier(.16,1,.3,1);
+        --ent-soft:cubic-bezier(.25,.8,.35,1);
+        --rise:9px;
+      }
+
+      @keyframes en-wipe{
+        from{ clip-path:inset(-.78em 0 calc(100% + .78em) 0); translate:0 var(--rise); }
+        to{ clip-path:inset(-.78em 0 -.78em 0); translate:0 0; }
+      }
+      @keyframes en-lift{
+        from{ opacity:0; translate:0 var(--rise); }
+      }
+      @keyframes en-settle{
+        from{ opacity:0; translate:0 calc(var(--rise)*.7); scale:.99; }
+      }
+      @keyframes en-draw{
+        from{ scale:1 0; }
+      }
+
+      html:not(.is-entered) .brand{ animation:en-lift .60s var(--ent-soft) .12s backwards; }
+      html:not(.is-entered) #about{ animation:en-lift .55s var(--ent-soft) .20s backwards; }
+      html:not(.is-entered) #product{ animation:en-lift .55s var(--ent-soft) .25s backwards; }
+      html:not(.is-entered) #solutions{ animation:en-lift .55s var(--ent-soft) .30s backwards; }
+      html:not(.is-entered) #login{ animation:en-lift .55s var(--ent-soft) .35s backwards; }
+      html:not(.is-entered) .pill{ animation:en-settle .60s var(--ent-soft) .40s backwards; }
+      html:not(.is-entered) .burger{ animation:en-lift .60s var(--ent-soft) .40s backwards; }
+      html:not(.is-entered) #p-title{ animation:en-wipe .95s var(--ent-line) .34s backwards; }
+      html:not(.is-entered) #twin-title{ animation:en-wipe .95s var(--ent-line) .39s backwards; }
+      html:not(.is-entered) #f-title{ animation:en-wipe .95s var(--ent-line) .44s backwards; }
+      html:not(.is-entered) #a-title{ animation:en-wipe .95s var(--ent-line) .54s backwards; }
+      html:not(.is-entered) #s-title{ animation:en-wipe .95s var(--ent-line) .64s backwards; }
+      html:not(.is-entered) #h-title{ animation:en-wipe .95s var(--ent-line) .74s backwards; }
+      html:not(.is-entered) #m-title{ animation:en-wipe .95s var(--ent-line) .84s backwards; }
+      html:not(.is-entered) #spo2-value{ animation:en-lift .70s var(--ent-soft) .74s backwards; }
+      html:not(.is-entered) #hrv-value{ animation:en-lift .70s var(--ent-soft) .80s backwards; }
+      html:not(.is-entered) #forecast-number{ animation:en-lift .80s var(--ent-line) .94s backwards; }
+      html:not(.is-entered) .patient-panel{ animation:en-settle .60s var(--ent-soft) 1.00s backwards; }
+      html:not(.is-entered) .twin-panel{ animation:en-settle .60s var(--ent-soft) 1.04s backwards; }
+      html:not(.is-entered) .forecast-panel{ animation:en-settle .60s var(--ent-soft) 1.07s backwards; }
+      html:not(.is-entered) .alert-panel{ animation:en-settle .60s var(--ent-soft) 1.14s backwards; }
+      html:not(.is-entered) .simulation-panel{ animation:en-settle .60s var(--ent-soft) 1.21s backwards; }
+      html:not(.is-entered) .history-panel{ animation:en-settle .60s var(--ent-soft) 1.28s backwards; }
+      html:not(.is-entered) .metrics-panel{ animation:en-settle .60s var(--ent-soft) 1.35s backwards; }
+      html:not(.is-entered) #foot1{ animation:en-lift .60s var(--ent-soft) 1.42s backwards; }
+      html:not(.is-entered) #foot2{ animation:en-lift .60s var(--ent-soft) 1.48s backwards; }
+    }
+
+    /* 8. DESKTOP ARCHITECTURE — LOCKED 1536x1024 COMPOSITION */
+    @media (min-width:1200px) and (min-height:560px) and (min-aspect-ratio:100/95){
+      .bar,.console,.foot{
+        left:50%;
+        width:calc(var(--u)*1536);
+        transform:translateX(-50%);
+      }
+
+      .bar{
+        top:0;
+        height:calc(var(--u)*120);
+      }
+
+      .foot{
+        bottom:0;
+        height:calc(var(--u)*130);
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:calc(var(--u)*6);
+      }
+
+      .console{
+        top:50%;
+        height:calc(var(--u)*1024);
+        transform:translate(-50%,-50%);
+      }
+
+      .navtoggle,.burger,.scrim{display:none}
+      .navpanel{display:contents}
+
+      .bar > *,
+      .foot > *,
+      .console > *,
+      .pill{
+        position:absolute;
+      }
+
+      .menu,
+      .menu a,
+      .login{
+        position:static;
+      }
+
+      .brand{ left:calc(var(--u)*120); top:calc(var(--u)*48); display:flex; align-items:center; gap:calc(var(--u)*12); }
+      .menu{ left:calc(var(--u)*500); top:calc(var(--u)*56); display:flex; gap:calc(var(--u)*36); }
+      .login{ right:calc(var(--u)*280); top:calc(var(--u)*56); }
+      .pill{ right:calc(var(--u)*120); top:calc(var(--u)*40); padding:calc(var(--u)*10) calc(var(--u)*20); }
+
+      /* Desktop Grid Coordinates with Dedicated 3D Twin Card */
+      /* Top row: Patient Vitals (left 120), 3D Twin Card (left 470), Forecast (left 980) */
+      .patient-panel    { left:calc(var(--u)*120); top:calc(var(--u)*175); width:calc(var(--u)*330); height:calc(var(--u)*265); padding:calc(var(--u)*20); }
+      .twin-panel       { left:calc(var(--u)*470); top:calc(var(--u)*175); width:calc(var(--u)*490); height:calc(var(--u)*265); padding:calc(var(--u)*16); }
+      .forecast-panel   { left:calc(var(--u)*980); top:calc(var(--u)*175); width:calc(var(--u)*436); height:calc(var(--u)*265); padding:calc(var(--u)*20); }
+
+      /* Middle row: History Trend (left 120), Simulation (left 630), Alert (left 1100) */
+      .history-panel    { left:calc(var(--u)*120); top:calc(var(--u)*465); width:calc(var(--u)*490); height:calc(var(--u)*310); padding:calc(var(--u)*20); }
+      .simulation-panel { left:calc(var(--u)*630); top:calc(var(--u)*465); width:calc(var(--u)*450); height:calc(var(--u)*310); padding:calc(var(--u)*20); }
+      .alert-panel      { left:calc(var(--u)*1100); top:calc(var(--u)*465); width:calc(var(--u)*316); height:calc(var(--u)*310); padding:calc(var(--u)*20); }
+
+      /* Bottom row: Evaluation Metrics */
+      .metrics-panel    { left:calc(var(--u)*120); top:calc(var(--u)*800); width:calc(var(--u)*1296); height:calc(var(--u)*130); padding:calc(var(--u)*16) calc(var(--u)*24); flex-direction:row; align-items:center; justify-content:space-between; }
+
+      .foot span { position:static; font-size:calc(var(--u)*15); }
+    }
+
+    /* 9. FLOW ARCHITECTURE — TABLET AND PHONE */
+    @media (max-width:1199px),
+    (max-height:559px),
+    (max-aspect-ratio:100/95){
+      :root{
+        --c:min(calc(100vw / 430), calc(100vh / 860));
+      }
+
+      body{
+        display:flex;
+        flex-direction:column;
+        height:100vh;
+        overflow-y:auto;
+        padding:
+          calc(env(safe-area-inset-top) + calc(var(--c)*24))
+          calc(var(--c)*22)
+          calc(env(safe-area-inset-bottom) + calc(var(--c)*22));
+      }
+
+      .bar,.console,.foot{
+        position:static;
+        width:100%;
+        transform:none;
+        left:auto;
+        top:auto;
+        bottom:auto;
+      }
+
+      .bar{
+        order:1;
+        position:relative;
+        z-index:50;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:calc(var(--c)*16);
+        margin-bottom:calc(var(--c)*16);
+      }
+
+      .navtoggle{ display:none; }
+      .burger{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:44px;
+        height:44px;
+        cursor:pointer;
+        z-index:60;
+      }
+      .burger svg{
+        width:22px;
+        height:14px;
+        color:var(--nav);
+      }
+      .burger path{
+        transition:transform 0.25s ease, opacity 0.25s ease;
+        transform-origin:center;
+      }
+
+      .scrim{
+        position:fixed;
+        inset:0;
+        background:rgba(2,6,15,.65);
+        backdrop-filter:blur(6px);
+        opacity:0;
+        pointer-events:none;
+        transition:opacity 0.25s ease;
+        z-index:40;
+      }
+
+      .navpanel{
+        position:fixed;
+        top:calc(env(safe-area-inset-top) + 64px);
+        right:16px;
+        left:16px;
+        border-radius:18px;
+        padding:24px;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.04) 100%),
+          linear-gradient(180deg, rgba(6,12,22,.9) 0%, rgba(6,12,22,.96) 100%);
+        border:1px solid rgba(196,214,232,.3);
+        backdrop-filter:blur(30px);
+        box-shadow:0 18px 40px rgba(0,0,0,.6);
+        display:flex;
+        flex-direction:column;
+        gap:16px;
+        opacity:0;
+        pointer-events:none;
+        transform:translateY(-10px) scale(0.98);
+        transition:opacity 0.25s ease, transform 0.25s ease;
+        z-index:55;
+      }
+
+      .menu{
+        display:flex;
+        flex-direction:column;
+        gap:14px;
+      }
+
+      .navtoggle:checked ~ .scrim{ opacity:1; pointer-events:auto; }
+      .navtoggle:checked ~ .navpanel{ opacity:1; pointer-events:auto; transform:translateY(0) scale(1); }
+      .navtoggle:checked ~ .burger .b1{ transform:translateY(6px) rotate(45deg); }
+      .navtoggle:checked ~ .burger .b2{ opacity:0; }
+      .navtoggle:checked ~ .burger .b3{ transform:translateY(-6px) rotate(-45deg); }
+
+      .console{
+        order:2;
+        flex:1;
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:calc(var(--c)*16);
+        height:auto;
+      }
+
+      .patient-panel,
+      .twin-panel,
+      .forecast-panel,
+      .alert-panel,
+      .simulation-panel,
+      .history-panel,
+      .metrics-panel{
+        grid-column:span 2;
+        padding:calc(var(--c)*20);
+        border-radius:18px;
+      }
+
+      .twin-viewport{
+        height:240px;
+        min-height:240px;
+      }
+
+      .metric-grid{
+        grid-template-columns:repeat(3, 1fr);
+        gap:16px;
+      }
+
+      .metrics-panel{
+        flex-direction:column;
+        align-items:stretch;
+        gap:18px;
+      }
+
+      .lead-time{
+        padding:12px 0;
+        border-left:none;
+        border-right:none;
+        border-top:1px solid rgba(196,214,232,.18);
+        border-bottom:1px solid rgba(196,214,232,.18);
+      }
+
+      .confusion{
+        align-items:flex-start;
+      }
+
+      .chart-frame{
+        height:200px;
+        min-height:200px;
+      }
+
+      .foot{
+        order:3;
+        text-align:center;
+        color:var(--foot);
+        font-size:calc(var(--c)*13);
+        line-height:1.55;
+        margin-top:20px;
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+      }
+    }
+
+    /* PHONE CANVAS */
+    @media (max-width:599px),(max-height:429px){
+      :root{
+        --c:min(calc(100vw / 360), calc(100vh / 770), 1px);
+        --rise:6px;
+      }
+
+      .veil{
+        background:
+          radial-gradient(130% 44% at 50% 45%,
+            rgba(var(--veil),.50) 0%,
+            rgba(var(--veil),.26) 55%,
+            rgba(var(--veil),0) 100%),
+          linear-gradient(180deg,
+            rgba(var(--veil),.34) 0%,
+            rgba(var(--veil),0) 20%,
+            rgba(var(--veil),0) 60%,
+            rgba(var(--veil),.36) 100%);
+      }
+
+      .console{
+        grid-template-columns:1fr;
+      }
+
+      .patient-panel,
+      .twin-panel,
+      .forecast-panel,
+      .alert-panel,
+      .simulation-panel,
+      .history-panel,
+      .metrics-panel{
+        grid-column:span 1;
+      }
+
+      .metric-grid{
+        grid-template-columns:repeat(2, 1fr);
+      }
+    }
+
+    /* 10. DYNAMIC VIEWPORT OVERRIDE */
+    @supports (height:100dvh){
+      @media (max-width:1199px),
+             (max-height:559px),
+             (max-aspect-ratio:100/95){
+        :root{
+          --c:min(calc(100vw / 430), calc(100dvh / 860));
+        }
+
+        body{height:100dvh;}
+
+        @media (max-width:599px),(max-height:429px){
+          :root{
+            --c:min(calc(100vw / 360), calc(100dvh / 770), 1px);
+          }
+        }
+
+        @media (max-height:429px) and (min-aspect-ratio:1/1){
+          :root{
+            --c:min(calc(100vw / 760), calc(100dvh / 430));
+          }
+        }
+
+        @media (min-width:600px) and (min-height:430px){
+          :root{
+            --c:min(calc(100vw / 860), calc(100dvh / 1120));
+          }
+
+          @media (min-aspect-ratio:1/1){
+            :root{
+              --c:min(calc(100vw / 1040), calc(100dvh / 780));
+            }
+          }
+        }
+      }
+    }
+  </style>
+
+  <!-- Importmap for Three.js and OrbitControls -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- 1) Full-viewport Background Video (Restored as full background) -->
+  <video class="art" autoplay muted loop playsinline preload="auto" aria-hidden="true"
+         poster="https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/130837c4-0244-4f37-9c61-8d801d93fd29.jpg"
+         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260912_104303_0c6d60b2-9353-408e-9449-585108a22fb5.mp4"></video>
+
+  <!-- 2) Subtle Veil Gradients over Video -->
+  <div class="veil"></div>
+
+  <!-- 3) Top Bar -->
+  <header class="bar">
+    <a class="brand" href="#" aria-label="Pulse-Twin AI Home">
+      <svg width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+      <span id="word">PULSE-TWIN</span>
+    </a>
+
+    <input class="navtoggle" type="checkbox" id="nav-open">
+    <label class="scrim" for="nav-open" aria-hidden="true"></label>
+    <label class="burger" for="nav-open" aria-label="Menu">
+      <svg viewBox="0 0 22 14" xmlns="http://www.w3.org/2000/svg">
+        <path class="b1" d="M1 1 H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path class="b2" d="M1 7 H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path class="b3" d="M1 13 H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </label>
+
+    <div class="navpanel">
+      <nav class="menu">
+        <a href="#patient"><span id="about">Patient</span></a>
+        <a href="#twin-3d"><span id="product">3D Twin</span></a>
+        <a href="#forecast"><span id="solutions">Forecast</span></a>
+      </nav>
+      <a class="login" href="#alerts"><span id="login">Active alerts</span></a>
+      <a class="pill" href="#simulation"><span id="contact">What-if simulation</span></a>
+    </div>
+  </header>
+
+  <!-- 4) Clinical Digital Twin Console Main -->
+  <main class="console">
+    <!-- Panel 1: Virtual Patient Vitals Card -->
+    <section id="patient" class="panel patient-panel aura-active">
+      <h2 class="panel-title">
+        <span id="p-title">Virtual Patient</span>
+        <div class="patient-selector">
+          <select id="patient-select" aria-label="Select Patient Digital Twin">
+            <option value="patient_a">Patient A — Stable</option>
+            <option value="patient_b" selected>Patient B — Deterioration Risk</option>
+            <option value="patient_c">Patient C — COPD History</option>
+          </select>
+        </div>
+      </h2>
+      <div class="vitals">
+        <div class="vital">
+          <span class="vital-label" id="spo2-label">SpO2</span>
+          <div style="display:flex;align-items:baseline;">
+            <span class="vital-value" id="spo2-value">88.4</span>
+            <span class="vital-unit">%</span>
+          </div>
+        </div>
+        <div class="vital">
+          <span class="vital-label" id="hrv-label">HRV</span>
+          <div style="display:flex;align-items:baseline;">
+            <span class="vital-value" id="hrv-value">36</span>
+            <span class="vital-unit">ms</span>
+          </div>
+        </div>
+      </div>
+      <p class="patient-meta"><span id="patient-meta">Monitoring active</span></p>
+    </section>
+
+    <!-- Panel 2: Dedicated 3D Cardiopulmonary Twin Component Card (Requirement: Small Component Card) -->
+    <section id="twin-3d" class="panel twin-panel aura-active" aria-label="3D Real-Life Lung and Heart Simulator Card">
+      <h2 class="panel-title">
+        <span id="twin-title" style="display:flex;align-items:center;gap:6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--cyan)"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          3D Cardiopulmonary Twin
+        </span>
+        <span id="card-sim-rate" style="font-size:11px;font-family:monospace;color:var(--cyan);">72 bpm · Systolic</span>
+      </h2>
+
+      <!-- Contained 3D WebGL Canvas Viewport -->
+      <div class="twin-viewport" id="twin-canvas-mount" title="Click and drag to rotate 3D organs, scroll to zoom">
+        <div class="twin-hud-badge" id="twin-hud-badge">Airway: Patent · Alveolar Gas Exchange Active</div>
+      </div>
+
+      <!-- Integrated System Filter Tabs inside Card (Requirement 2) -->
+      <div class="twin-filter-bar" id="twin-filter-bar">
+        <button type="button" class="card-filter-btn active" data-system="all" id="btn-card-all">All Systems</button>
+        <button type="button" class="card-filter-btn" data-system="cardiovascular" id="btn-card-cardio">Cardio</button>
+        <button type="button" class="card-filter-btn" data-system="pulmonary" id="btn-card-pulmonary">Pulmonary</button>
+        <button type="button" class="card-filter-btn" data-system="microcirculation" id="btn-card-micro">Vascular</button>
+      </div>
+    </section>
+
+    <!-- Panel 3: 30-Minute Hypoxemia Forecast -->
+    <section id="forecast" class="panel forecast-panel aura-active" aria-live="polite">
+      <h2 class="panel-title"><span id="f-title">30-Minute Hypoxemia Forecast</span></h2>
+      <div class="forecast-score">
+        <span class="forecast-number" id="forecast-number">78.0</span>
+        <span class="forecast-unit">%</span>
+      </div>
+      <div class="forecast-range">
+        <span id="forecast-range">Approx. uncertainty: 69.0% – 86.0%</span>
+      </div>
+      <p class="forecast-explanation"><span id="forecast-explanation">SpO2 slope decreased by -2.8% over 1h, increasing risk. Rapid hypoxemic trajectory detected.</span></p>
+      <span class="calibration-badge" id="calibration-badge">Calibrated (Isotonic)</span>
+    </section>
+
+    <!-- Panel 4: Clinical Alert Panel -->
+    <section id="alerts" class="panel alert-panel critical-alert aura-active" aria-live="polite">
+      <h2 class="panel-title"><span id="a-title">Clinical Alert</span></h2>
+      <p class="alert-message"><span id="alert-message">Critical Hypoxemia Risk: SpO2 dropping to 88.4%. Model projects acute desaturation event within 30m.</span></p>
+      <div class="alert-actions">
+        <button class="action acknowledge" id="acknowledge" type="button">
+          <span id="ack-label">Acknowledge</span>
+        </button>
+        <button class="action escalate" id="escalate" type="button">
+          <span id="esc-label">Escalate</span>
+        </button>
+        <button class="action mute" id="mute" type="button">
+          <span id="mute-label">Mute</span>
+        </button>
+      </div>
+      <div class="intervention-picker" id="intervention-picker">
+        <label for="intervention">Simulated intervention</label>
+        <select id="intervention">
+          <option value="">No intervention</option>
+          <option value="administer_o2" selected>Simulate supplemental O2 (+6 L/min)</option>
+          <option value="bronchodilator">Simulate bronchodilator</option>
+        </select>
+      </div>
+      <p class="action-status"><span id="action-status"></span></p>
+    </section>
+
+    <!-- Panel 5: What-If Intervention Simulation -->
+    <section id="simulation" class="panel simulation-panel aura-active">
+      <h2 class="panel-title"><span id="s-title">What-If Intervention Simulation</span></h2>
+      <div class="chart-frame">
+        <svg id="simulation-chart" viewBox="0 0 600 240" role="img"
+             aria-label="Projected SpO2 trajectory over the next 30 minutes"></svg>
+      </div>
+      <p class="chart-note"><span id="simulation-note">
+        Select an intervention from an active alert to simulate a trajectory.
+      </span></p>
+    </section>
+
+    <!-- Panel 6: Recent Monitoring Trend -->
+    <section id="history" class="panel history-panel aura-active">
+      <h2 class="panel-title"><span id="h-title">Recent Monitoring Trend</span></h2>
+      <div class="chart-frame">
+        <svg id="history-chart" viewBox="0 0 600 240" role="img"
+             aria-label="Recent SpO2 and HRV monitoring trend"></svg>
+      </div>
+      <div class="legend">
+        <span class="legend-item"><i class="dot spo2"></i>SpO2</span>
+        <span class="legend-item"><i class="dot hrv"></i>HRV</span>
+        <span class="legend-item"><i class="dot threshold"></i>Hypoxemia threshold</span>
+      </div>
+    </section>
+
+    <!-- Panel 7: Model Evaluation Metrics -->
+    <section id="evaluation" class="panel metrics-panel aura-active">
+      <h2 class="panel-title"><span id="m-title">Model Evaluation</span></h2>
+      <div class="metric-grid">
+        <div class="metric"><span class="metric-label">ROC-AUC</span><span class="metric-value" id="metric-auc">0.892</span></div>
+        <div class="metric"><span class="metric-label">Brier</span><span class="metric-value" id="metric-brier">0.088</span></div>
+        <div class="metric"><span class="metric-label">Precision</span><span class="metric-value" id="metric-precision">0.865</span></div>
+        <div class="metric"><span class="metric-label">Recall</span><span class="metric-value" id="metric-recall">0.812</span></div>
+        <div class="metric"><span class="metric-label">F1</span><span class="metric-value" id="metric-f1">0.838</span></div>
+        <div class="metric"><span class="metric-label">Missed events</span><span class="metric-value" id="metric-missed">2</span></div>
+      </div>
+      <div class="lead-time">
+        <span class="metric-label">Warning lead time</span>
+        <span class="metric-value" id="lead-time">20m median (p25: 15m)</span>
+      </div>
+      <div class="confusion">
+        <span class="metric-label">Confusion matrix</span>
+        <div class="matrix">
+          <span>TN: <strong id="tn">1840</strong></span><span>FP: <strong id="fp">48</strong></span>
+          <span>FN: <strong id="fn">32</strong></span><span>TP: <strong id="tp">124</strong></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 5) Footer -->
+  <footer class="foot">
+    <span id="foot1">Synthetic Digital Twin prototype — no real patient data is used or stored.</span>
+    <span id="foot2">NON-CLINICAL DECISION SUPPORT. NOT A MEDICAL DEVICE.</span>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // --- (a) Reduced-motion video control ---
+    (function(){
+      var q = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)'),
+          v = document.querySelector('video.art');
+      if(!q || !v) return;
+      function sync(){
+        if(q.matches){ v.pause(); }
+        else{
+          var p = v.play();
+          if(p) p.catch(function(){});
+        }
+      }
+      sync();
+      q.addEventListener ? q.addEventListener('change', sync) : q.addListener(sync);
+    })();
+
+    // --- (b) Entrance retirement ---
+    (function(){
+      var foot2 = document.getElementById('foot2');
+      var doneCalled = false;
+      function done() {
+        if (doneCalled) return;
+        doneCalled = true;
+        clearTimeout(fallback);
+        if (foot2) {
+          foot2.removeEventListener('animationend', done);
+        }
+        document.documentElement.classList.add('is-entered');
+      }
+      if (foot2) {
+        foot2.addEventListener('animationend', done);
+      }
+      var fallback = setTimeout(done, 4000);
+    })();
+  </script>
+
+  <!-- Module Script for 3D Cardiopulmonary Digital Twin & CDS Terminal Logic -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // =========================================================================
+    // 1. APPLICATION & CDS BACKEND STATE
+    // =========================================================================
+    const API_BASE = 'http://localhost:8000';
+    const AUTH_TOKEN = 'Bearer valid_mock_token';
+
+    const state = {
+      patientId: 'patient_b',
+      isConnected: false,
+      lastUpdated: new Date(),
+      currentVitals: { spo2: 88.4, hrv_ms: 36.2 },
+      prediction: {
+        probability_score: 0.78,
+        approximate_uncertainty_interval_95: [0.69, 0.86],
+        calibrated: true,
+        explanation: 'SpO2 slope decreased by -2.8% over 1h, increasing risk. Rapid hypoxemic trajectory detected.'
+      },
+      alert: {
+        alert_id: 'alt_patient_b_882',
+        message: 'Critical Hypoxemia Risk: SpO2 dropping to 88.4%. Model projects acute desaturation event within 30m.',
+        severity: 'critical'
+      },
+      history: [],
+      simulation: { projected_spo2: [88.5, 90.0, 91.5, 93.0, 94.5, 96.0] },
+      metrics: {
+        roc_auc: 0.892,
+        brier_score: 0.088,
+        precision: 0.865,
+        recall: 0.812,
+        f1: 0.838,
+        confusion_matrix: [[1840, 48], [32, 124]],
+        missed_events: 2,
+        calibration_type: 'isotonic',
+        lead_time_mins_median: 20.0,
+        lead_time_mins_p25: 15.0,
+        lead_time_mins_p75: 25.0
+      },
+      pendingAction: false,
+      activeSystem: 'all'
+    };
+
+    // Pre-populate seed history
+    for(let i = 24; i >= 0; i--){
+      const base = state.patientId === 'patient_b' ? 92 : (state.patientId === 'patient_c' ? 91 : 98);
+      const drop = state.patientId === 'patient_b' ? ((24 - i) / 24) * 4.2 : 0;
+      const s = Math.min(100, Math.max(75, base - drop + Math.sin(i * 0.5) * 0.7));
+      const h = Math.max(20, (state.patientId === 'patient_b' ? 44 : 58) - drop * 0.8 + Math.cos(i * 0.5) * 2);
+      state.history.push({ spo2: Number(s.toFixed(1)), hrv: Number(h.toFixed(1)) });
+    }
+
+    // =========================================================================
+    // 2. THREE.JS 3D REAL-LIFE LUNG AND HEART SIMULATOR INSIDE COMPONENT CARD
+    // =========================================================================
+    const cardMount = document.getElementById('twin-canvas-mount');
+    let scene, camera, renderer, controls;
+    let heartGroup, lungsGroup, vesselsGroup, particlesGroup;
+    let lvMesh, rvMesh, aortaMesh, leftLungMesh, rightLungMesh;
+    let lungMaterials = [];
+
+    function init3DCardSimulator() {
+      if (!cardMount) return;
+
+      const w = cardMount.clientWidth || 400;
+      const h = cardMount.clientHeight || 200;
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+      camera.position.set(0, 0.25, 7.6);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.25;
+
+      cardMount.appendChild(renderer.domElement);
+
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.minDistance = 3.5;
+      controls.maxDistance = 12.0;
+      controls.target.set(0, 0.1, 0);
+
+      // Lighting Rig
+      const ambientLight = new THREE.AmbientLight(0x0e1c36, 1.8);
+      scene.add(ambientLight);
+
+      const keyLight = new THREE.DirectionalLight(0x38bdf8, 2.8);
+      keyLight.position.set(4, 5, 5);
+      scene.add(keyLight);
+
+      const fillLight = new THREE.DirectionalLight(0xa855f7, 2.2);
+      fillLight.position.set(-5, -3, -4);
+      scene.add(fillLight);
+
+      const cardiacGlowLight = new THREE.PointLight(0xff3366, 2.6, 7);
+      cardiacGlowLight.position.set(0, 0, 1.8);
+      scene.add(cardiacGlowLight);
+
+      // Master Organ Hierarchy
+      const masterGroup = new THREE.Group();
+      scene.add(masterGroup);
+
+      heartGroup = new THREE.Group();
+      lungsGroup = new THREE.Group();
+      vesselsGroup = new THREE.Group();
+      particlesGroup = new THREE.Group();
+
+      masterGroup.add(heartGroup);
+      masterGroup.add(lungsGroup);
+      masterGroup.add(vesselsGroup);
+      masterGroup.add(particlesGroup);
+
+      // --- A. Procedural Heart Construction ---
+      // Left Ventricle (Thick myocardium, apical curvature)
+      const lvGeo = new THREE.SphereGeometry(0.75, 30, 26);
+      lvGeo.scale(0.85, 1.25, 0.9);
+      lvGeo.rotateZ(-0.22);
+      const lvMat = new THREE.MeshPhysicalMaterial({
+        color: 0xcc2244,
+        emissive: 0x880820,
+        emissiveIntensity: 0.45,
+        roughness: 0.25,
+        metalness: 0.15,
+        clearcoat: 0.8,
+      });
+      lvMesh = new THREE.Mesh(lvGeo, lvMat);
+      lvMesh.position.set(-0.25, -0.4, 0.15);
+      heartGroup.add(lvMesh);
+
+      // Right Ventricle
+      const rvGeo = new THREE.SphereGeometry(0.68, 28, 24);
+      rvGeo.scale(0.9, 1.15, 0.75);
+      rvGeo.rotateZ(0.18);
+      const rvMat = new THREE.MeshPhysicalMaterial({
+        color: 0xaa1e3d,
+        emissive: 0x5a0416,
+        emissiveIntensity: 0.4,
+        roughness: 0.3,
+        metalness: 0.12,
+        clearcoat: 0.7,
+      });
+      rvMesh = new THREE.Mesh(rvGeo, rvMat);
+      rvMesh.position.set(0.42, -0.32, 0.22);
+      heartGroup.add(rvMesh);
+
+      // Bi-atrial Syncytium & Auricles
+      const atriaGeo = new THREE.SphereGeometry(0.55, 24, 20);
+      atriaGeo.scale(1.4, 0.8, 0.9);
+      const atriaMat = new THREE.MeshPhysicalMaterial({
+        color: 0x991b38,
+        emissive: 0x48081a,
+        emissiveIntensity: 0.35,
+        roughness: 0.35,
+      });
+      const atriaMesh = new THREE.Mesh(atriaGeo, atriaMat);
+      atriaMesh.position.set(0.05, 0.45, -0.1);
+      heartGroup.add(atriaMesh);
+
+      // Visible Aortic Arch & Supra-aortic Branches
+      const aortaCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-0.15, 0.35, 0.1),
+        new THREE.Vector3(-0.1, 0.95, 0.15),
+        new THREE.Vector3(0.18, 1.4, 0.05),
+        new THREE.Vector3(0.55, 1.35, -0.2),
+        new THREE.Vector3(0.65, 0.8, -0.35),
+        new THREE.Vector3(0.6, -1.2, -0.4),
+      ]);
+      const aortaGeo = new THREE.TubeGeometry(aortaCurve, 36, 0.19, 16, false);
+      const aortaMat = new THREE.MeshPhysicalMaterial({
+        color: 0xef4444,
+        emissive: 0xb91c1c,
+        emissiveIntensity: 0.5,
+        roughness: 0.2,
+        clearcoat: 0.9,
+      });
+      aortaMesh = new THREE.Mesh(aortaGeo, aortaMat);
+      heartGroup.add(aortaMesh);
+
+      // Supra-aortic branches
+      [
+        [new THREE.Vector3(0.12, 1.35, 0.05), new THREE.Vector3(0.18, 1.75, 0.1)],
+        [new THREE.Vector3(0.28, 1.38, 0.0), new THREE.Vector3(0.38, 1.8, 0.02)],
+        [new THREE.Vector3(0.44, 1.34, -0.08), new THREE.Vector3(0.6, 1.76, -0.05)]
+      ].forEach(pts => {
+        const c = new THREE.CatmullRomCurve3(pts);
+        const m = new THREE.Mesh(new THREE.TubeGeometry(c, 10, 0.055, 10, false), aortaMat);
+        heartGroup.add(m);
+      });
+
+      // Superior and Inferior Vena Cava
+      const vcMat = new THREE.MeshPhysicalMaterial({ color: 0x1e3a8a, emissive: 0x172554, emissiveIntensity: 0.35 });
+      const svcCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.65, 1.7, -0.1),
+        new THREE.Vector3(0.58, 0.9, -0.05),
+        new THREE.Vector3(0.48, 0.35, -0.02),
+      ]);
+      const ivcCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.42, -0.4, -0.15),
+        new THREE.Vector3(0.48, -1.2, -0.25),
+      ]);
+      heartGroup.add(new THREE.Mesh(new THREE.TubeGeometry(svcCurve, 14, 0.14, 12, false), vcMat));
+      heartGroup.add(new THREE.Mesh(new THREE.TubeGeometry(ivcCurve, 14, 0.15, 12, false), vcMat));
+
+      // Pulmonary Trunk
+      const ptCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.2, 0.2, 0.3),
+        new THREE.Vector3(0.12, 0.8, 0.25),
+        new THREE.Vector3(-0.05, 1.0, 0.05),
+      ]);
+      const ptMat = new THREE.MeshPhysicalMaterial({ color: 0x2563eb, emissive: 0x1d4ed8, emissiveIntensity: 0.45 });
+      heartGroup.add(new THREE.Mesh(new THREE.TubeGeometry(ptCurve, 16, 0.16, 14, false), ptMat));
+
+      // --- B. Transparent Pair of Lungs Wrapping Around Heart ---
+      // Trachea & Airway
+      const tracheaCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.0, 2.3, -0.12),
+        new THREE.Vector3(0.0, 1.45, -0.1),
+        new THREE.Vector3(0.0, 0.95, -0.08),
+      ]);
+      const airwayMat = new THREE.MeshPhysicalMaterial({
+        color: 0x38bdf8,
+        emissive: 0x0284c7,
+        emissiveIntensity: 0.4,
+        roughness: 0.35,
+        transmission: 0.45,
+        transparent: true,
+        opacity: 0.8
+      });
+      lungsGroup.add(new THREE.Mesh(new THREE.TubeGeometry(tracheaCurve, 20, 0.13, 14, false), airwayMat));
+
+      // Translucent Lung Parenchyma with Gas Exchange Material
+      const createLungMaterial = () => {
+        const mat = new THREE.MeshPhysicalMaterial({
+          color: 0x0284c7,
+          emissive: 0x0369a1,
+          emissiveIntensity: 0.5,
+          roughness: 0.3,
+          metalness: 0.1,
+          clearcoat: 0.9,
+          transmission: 0.65,
+          thickness: 1.2,
+          transparent: true,
+          opacity: 0.72,
+          depthWrite: false,
+        });
+        lungMaterials.push(mat);
+        return mat;
+      };
+
+      // Right Lung (wrapping anterior-lateral)
+      const rLungMat = createLungMaterial();
+      const rLungGeo = new THREE.SphereGeometry(1.2, 26, 22);
+      rLungGeo.scale(1.05, 1.6, 0.85);
+      rightLungMesh = new THREE.Mesh(rLungGeo, rLungMat);
+      rightLungMesh.position.set(1.5, 0.15, -0.1);
+      lungsGroup.add(rightLungMesh);
+
+      // Left Lung (wrapping left with cardiac notch)
+      const lLungMat = createLungMaterial();
+      const lLungGeo = new THREE.SphereGeometry(1.15, 26, 22);
+      lLungGeo.scale(1.0, 1.55, 0.8);
+      leftLungMesh = new THREE.Mesh(lLungGeo, lLungMat);
+      leftLungMesh.position.set(-1.45, 0.12, -0.05);
+      lungsGroup.add(leftLungMesh);
+
+      // --- C. Microcirculation Vascular Network & Moving Corpuscle Particles ---
+      const particleCount = 180;
+      const particlePositions = new Float32Array(particleCount * 3);
+      const particleColors = new Float32Array(particleCount * 3);
+      const particleData = [];
+
+      const vascularLoop = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-0.25, -0.4, 0.15),
+        new THREE.Vector3(0.18, 1.4, 0.05),
+        new THREE.Vector3(0.6, -1.2, -0.4),
+        new THREE.Vector3(1.3, -2.1, -0.3),
+        new THREE.Vector3(0.48, 0.35, -0.02),
+        new THREE.Vector3(1.3, 0.65, -0.25),
+        new THREE.Vector3(1.5, 0.2, -0.1),
+        new THREE.Vector3(-0.15, 0.35, 0.1),
+      ], true);
+
+      for (let i = 0; i < particleCount; i++) {
+        const progress = Math.random();
+        particleData.push({ progress, speed: 0.0018 + Math.random() * 0.002 });
+        const pt = vascularLoop.getPointAt(progress);
+        particlePositions[i * 3] = pt.x;
+        particlePositions[i * 3 + 1] = pt.y;
+        particlePositions[i * 3 + 2] = pt.z;
+
+        particleColors[i * 3] = 0.22;
+        particleColors[i * 3 + 1] = 0.74;
+        particleColors[i * 3 + 2] = 0.97;
+      }
+
+      const pGeo = new THREE.BufferGeometry();
+      pGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+      pGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+      const pMat = new THREE.PointsMaterial({
+        size: 0.13,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      const particleSystem = new THREE.Points(pGeo, pMat);
+      particlesGroup.add(particleSystem);
+
+      // --- Animation Loop: Heart Rhythmic Pulse & Out-of-Sync Lungs Breathing ---
+      const clock = new THREE.Clock();
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const elapsed = clock.getElapsedTime();
+
+        // 1. Slow turntable rotation
+        masterGroup.rotation.y += 0.003;
+
+        // 2. Realistic Rhythmic Heartbeat (Systolic & Diastolic)
+        const bpm = Math.max(55, Math.min(125, 72 + (60 - state.currentVitals.hrv_ms) * 0.4));
+        const heartFreq = (bpm / 60) * 2 * Math.PI;
+        const heartPhase = (elapsed * heartFreq) % (2 * Math.PI);
+
+        let heartScale = 1.0;
+        if (heartPhase < 0.65) {
+          heartScale = 1.0 + Math.sin((heartPhase / 0.65) * Math.PI) * 0.08;
+        } else if (heartPhase > 0.9 && heartPhase < 1.7) {
+          heartScale = 1.0 - Math.sin(((heartPhase - 0.9) / 0.8) * Math.PI) * 0.09;
+        }
+        heartGroup.scale.set(heartScale, heartScale, heartScale);
+        cardiacGlowLight.intensity = 1.8 + (heartScale - 1.0) * 14;
+
+        // Update card-level rate label
+        const rateLabel = document.getElementById('card-sim-rate');
+        if (rateLabel) {
+          rateLabel.textContent = `${Math.round(bpm)} bpm · ${heartPhase < 0.65 ? 'Systole' : 'Diastole'}`;
+        }
+
+        // 3. Out-of-sync Lungs Breathing Expansion/Contraction
+        const respFreq = (15 / 60) * 2 * Math.PI;
+        const breathWave = Math.sin(elapsed * respFreq);
+        const breathScale = 1.0 + breathWave * 0.09;
+        lungsGroup.scale.set(breathScale, 1.0 + breathWave * 0.05, breathScale);
+
+        // 4. Gas Exchange Translucent Color Shift inside Lungs
+        const gasCycle = (breathWave + 1.0) * 0.5; // 0 (exhale) to 1 (inhale)
+        const oxygenatedCyan = new THREE.Color(0x38bdf8);
+        const deoxygenatedViolet = new THREE.Color(0x4f46e5);
+        const lungEmissiveColor = deoxygenatedViolet.clone().lerp(oxygenatedCyan, gasCycle);
+
+        lungMaterials.forEach(m => {
+          m.emissive.copy(lungEmissiveColor);
+          m.emissiveIntensity = 0.35 + gasCycle * 0.35;
+        });
+
+        // 5. Vascular Microcirculation Particle Motion
+        const pPositions = pGeo.getAttribute('position').array;
+        for (let i = 0; i < particleCount; i++) {
+          const p = particleData[i];
+          p.progress += p.speed * (bpm / 70);
+          if (p.progress > 1) p.progress -= 1;
+          const pt = vascularLoop.getPointAt(p.progress);
+          pPositions[i * 3] = pt.x;
+          pPositions[i * 3 + 1] = pt.y;
+          pPositions[i * 3 + 2] = pt.z;
+        }
+        pGeo.getAttribute('position').needsUpdate = true;
+
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      const resizeObserver = new ResizeObserver(() => {
+        if (!cardMount) return;
+        const w2 = cardMount.clientWidth;
+        const h2 = cardMount.clientHeight;
+        if (w2 > 0 && h2 > 0) {
+          camera.aspect = w2 / h2;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w2, h2);
+        }
+      });
+      resizeObserver.observe(cardMount);
+    }
+
+    // System Filter Control inside Component Card (Requirement 2)
+    function applyCardSystemFilter(sys) {
+      state.activeSystem = sys;
+      document.querySelectorAll('.card-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.system === sys);
+      });
+
+      if (!heartGroup || !lungsGroup || !vesselsGroup || !particlesGroup) return;
+
+      if (sys === 'all') {
+        heartGroup.visible = true;
+        lungsGroup.visible = true;
+        vesselsGroup.visible = true;
+        particlesGroup.visible = true;
+        lungMaterials.forEach(m => { m.opacity = 0.72; m.transmission = 0.65; });
+      } else if (sys === 'cardiovascular') {
+        heartGroup.visible = true;
+        lungsGroup.visible = true;
+        vesselsGroup.visible = true;
+        particlesGroup.visible = true;
+        lungMaterials.forEach(m => { m.opacity = 0.15; m.transmission = 0.9; });
+      } else if (sys === 'pulmonary') {
+        heartGroup.visible = false;
+        lungsGroup.visible = true;
+        vesselsGroup.visible = false;
+        particlesGroup.visible = false;
+        lungMaterials.forEach(m => { m.opacity = 0.85; m.transmission = 0.5; });
+      } else if (sys === 'microcirculation') {
+        heartGroup.visible = false;
+        lungsGroup.visible = true;
+        vesselsGroup.visible = true;
+        particlesGroup.visible = true;
+        lungMaterials.forEach(m => { m.opacity = 0.2; m.transmission = 0.85; });
+      }
+    }
+
+    // Initialize Card-Level System Filter Buttons
+    document.querySelectorAll('.card-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyCardSystemFilter(btn.dataset.system);
+      });
+    });
+
+    // =========================================================================
+    // 3. CLINICAL TELEMETRY & API POLLING LOGIC
+    // =========================================================================
+    const els = {
+      patientSelect: document.getElementById('patient-select'),
+      spo2Value: document.getElementById('spo2-value'),
+      hrvValue: document.getElementById('hrv-value'),
+      patientMeta: document.getElementById('patient-meta'),
+      forecastNumber: document.getElementById('forecast-number'),
+      forecastRange: document.getElementById('forecast-range'),
+      forecastExp: document.getElementById('forecast-explanation'),
+      calBadge: document.getElementById('calibration-badge'),
+      alertPanel: document.getElementById('alerts'),
+      alertMsg: document.getElementById('alert-message'),
+      btnAck: document.getElementById('acknowledge'),
+      btnEsc: document.getElementById('escalate'),
+      btnMute: document.getElementById('mute'),
+      interventionSelect: document.getElementById('intervention'),
+      actionStatus: document.getElementById('action-status'),
+      simNote: document.getElementById('simulation-note'),
+      historyChart: document.getElementById('history-chart'),
+      simChart: document.getElementById('simulation-chart'),
+      mAuc: document.getElementById('metric-auc'),
+      mBrier: document.getElementById('metric-brier'),
+      mPrec: document.getElementById('metric-precision'),
+      mRecall: document.getElementById('metric-recall'),
+      mF1: document.getElementById('metric-f1'),
+      mMissed: document.getElementById('metric-missed'),
+      leadTime: document.getElementById('lead-time'),
+      tn: document.getElementById('tn'),
+      fp: document.getElementById('fp'),
+      fn: document.getElementById('fn'),
+      tp: document.getElementById('tp'),
+      hudBadge: document.getElementById('twin-hud-badge')
+    };
+
+    function generateMockPatientData(patientId) {
+      let spo2 = 98.2, hrv = 58.4, prob = 0.08, ci = [0.03, 0.14];
+      let exp = 'Vitals within normal variance bounds.';
+      let alert = null;
+
+      if (patientId === 'patient_b') {
+        spo2 = 88.4 + (Math.random() - 0.5) * 0.4;
+        hrv = 36.2 + (Math.random() - 0.5) * 1.0;
+        prob = 0.78;
+        ci = [0.69, 0.86];
+        exp = 'SpO2 slope decreased by -2.8% over 1h, increasing risk. Rapid hypoxemic trajectory detected.';
+        alert = { alert_id: 'alt_patient_b_882', message: 'Critical Hypoxemia Risk: SpO2 dropping to ' + spo2.toFixed(1) + '%. Model projects acute desaturation event within 30m.', severity: 'critical' };
+      } else if (patientId === 'patient_c') {
+        spo2 = 90.5 + (Math.random() - 0.5) * 0.4;
+        hrv = 39.8 + (Math.random() - 0.5) * 1.0;
+        prob = 0.46;
+        ci = [0.38, 0.55];
+        exp = 'EHR indicates active COPD, increasing baseline risk. Moderate oxygenation decline observed.';
+        alert = { alert_id: 'alt_patient_c_409', message: 'Elevated risk for COPD patient: SpO2 hovering near 90%. Watch closely for rapid decompensation.', severity: 'warning' };
+      } else {
+        spo2 = 98.2 + (Math.random() - 0.5) * 0.3;
+        hrv = 58.4 + (Math.random() - 0.5) * 1.5;
+        prob = 0.08;
+        ci = [0.03, 0.14];
+        exp = 'Vitals are stable. SpO2 slope is flat and within expected variance.';
+      }
+
+      return {
+        current_vitals: { spo2: Number(spo2.toFixed(1)), hrv_ms: Number(hrv.toFixed(1)) },
+        prediction: { probability_score: prob, approximate_uncertainty_interval_95: ci, calibrated: true, explanation: exp },
+        alert,
+        metrics: state.metrics
+      };
+    }
+
+    async function fetchMonitoringStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/patient/${state.patientId}/monitoring-status`, {
+          headers: { 'Authorization': AUTH_TOKEN }
+        });
+        if (!res.ok) throw new Error('API offline');
+        const data = await res.json();
+        state.isConnected = true;
+        processIncomingData(data);
+      } catch (err) {
+        state.isConnected = false;
+        const mock = generateMockPatientData(state.patientId);
+        processIncomingData(mock);
+      }
+    }
+
+    function processIncomingData(data) {
+      state.lastUpdated = new Date();
+      state.currentVitals = data.current_vitals;
+      state.prediction = data.prediction;
+      state.alert = data.alert;
+      if (data.metrics) state.metrics = data.metrics;
+
+      // Update history buffer
+      if (state.currentVitals) {
+        state.history.push({ spo2: state.currentVitals.spo2, hrv: state.currentVitals.hrv_ms });
+        if (state.history.length > 30) state.history.shift();
+      }
+
+      renderAll();
+    }
+
+    function renderAll() {
+      // 1. Patient Panel
+      if (state.currentVitals) {
+        els.spo2Value.textContent = state.currentVitals.spo2.toFixed(1);
+        els.hrvValue.textContent = Math.round(state.currentVitals.hrv_ms);
+        els.spo2Value.style.color = state.currentVitals.spo2 < 90 ? 'var(--critical)' : (state.currentVitals.spo2 < 94 ? 'var(--warn)' : 'var(--cyan)');
+        els.patientMeta.textContent = `Monitoring active • ${state.isConnected ? 'LIVE' : 'SYNTHETIC'} • ${state.lastUpdated.toLocaleTimeString()}`;
+
+        // 3D Card HUD Badge
+        if (els.hudBadge) {
+          if (state.currentVitals.spo2 < 90) {
+            els.hudBadge.textContent = 'Airway: Patent · Hypoxic Desaturation (<90%)';
+            els.hudBadge.style.borderColor = 'rgba(239,68,68,0.7)';
+            els.hudBadge.style.color = 'var(--critical)';
+          } else if (state.currentVitals.spo2 < 94) {
+            els.hudBadge.textContent = 'Airway: Patent · Borderline Alveolar Exchange';
+            els.hudBadge.style.borderColor = 'rgba(245,158,11,0.7)';
+            els.hudBadge.style.color = 'var(--warn)';
+          } else {
+            els.hudBadge.textContent = 'Airway: Patent · Alveolar Gas Exchange Optimal';
+            els.hudBadge.style.borderColor = 'rgba(56,189,248,0.4)';
+            els.hudBadge.style.color = 'var(--cyan)';
+          }
+        }
+      }
+
+      // 2. Forecast Panel
+      if (state.prediction) {
+        const probPct = (state.prediction.probability_score * 100).toFixed(1);
+        els.forecastNumber.textContent = probPct;
+        els.forecastNumber.style.color = state.prediction.probability_score > 0.6 ? 'var(--critical)' : (state.prediction.probability_score > 0.3 ? 'var(--warn)' : 'var(--ink)');
+        const ci = state.prediction.approximate_uncertainty_interval_95;
+        els.forecastRange.textContent = `Approx. uncertainty: ${(ci[0]*100).toFixed(1)}% – ${(ci[1]*100).toFixed(1)}%`;
+        els.forecastExp.textContent = state.prediction.explanation;
+        els.calBadge.textContent = state.prediction.calibrated ? 'Calibrated (Isotonic)' : 'Uncalibrated';
+      }
+
+      // 3. Alert Panel
+      if (state.alert) {
+        els.alertMsg.textContent = state.alert.message;
+        els.alertPanel.classList.toggle('critical-alert', state.alert.severity === 'critical');
+        els.alertPanel.setAttribute('aria-live', state.alert.severity === 'critical' ? 'assertive' : 'polite');
+      } else {
+        els.alertMsg.textContent = 'No active forecast alert.';
+        els.alertPanel.classList.remove('critical-alert');
+        els.alertPanel.setAttribute('aria-live', 'polite');
+      }
+
+      // 4. Metrics Panel
+      if (state.metrics) {
+        const m = state.metrics;
+        els.mAuc.textContent = m.roc_auc.toFixed(3);
+        els.mBrier.textContent = m.brier_score.toFixed(3);
+        els.mPrec.textContent = m.precision.toFixed(3);
+        els.mRecall.textContent = m.recall.toFixed(3);
+        els.mF1.textContent = m.f1.toFixed(3);
+        els.mMissed.textContent = m.missed_events;
+        els.leadTime.textContent = `${m.lead_time_mins_median.toFixed(0)}m median (p25: ${m.lead_time_mins_p25}m)`;
+        if (m.confusion_matrix) {
+          els.tn.textContent = m.confusion_matrix[0][0];
+          els.fp.textContent = m.confusion_matrix[0][1];
+          els.fn.textContent = m.confusion_matrix[1][0];
+          els.tp.textContent = m.confusion_matrix[1][1];
+        }
+      }
+
+      // 5. SVG Charts
+      renderHistoryChart();
+      renderSimulationChart();
+    }
+
+    // Chart SVG Rendering
+    function createSVG(tag, attrs) {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (let k in attrs) el.setAttribute(k, attrs[k]);
+      return el;
+    }
+
+    function renderHistoryChart() {
+      const svg = els.historyChart;
+      if (!svg) return;
+      svg.innerHTML = '';
+
+      const w = 600, h = 240, padL = 45, padR = 25, padT = 20, padB = 30;
+      const innerW = w - padL - padR;
+      const innerH = h - padT - padB;
+
+      const mapSpo2 = (v) => padT + innerH - ((Math.min(100, Math.max(80, v)) - 80) / 20) * innerH;
+      const mapHrv = (v) => padT + innerH - ((Math.min(80, Math.max(20, v)) - 20) / 60) * innerH;
+      const threshY = mapSpo2(90);
+
+      // Grid & threshold
+      [85, 90, 95, 100].forEach(val => {
+        const y = mapSpo2(val);
+        svg.appendChild(createSVG('line', { x1: padL, y1: y, x2: padL + innerW, y2: y, stroke: 'rgba(255,255,255,0.08)', 'stroke-width': 1 }));
+        const t = createSVG('text', { x: padL - 8, y: y + 3.5, fill: 'var(--sub)', 'font-size': '10', 'text-anchor': 'end' });
+        t.textContent = `${val}%`;
+        svg.appendChild(t);
+      });
+
+      svg.appendChild(createSVG('line', { x1: padL, y1: threshY, x2: padL + innerW, y2: threshY, stroke: '#ef4444', 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }));
+
+      // Curves
+      let dS = '', dH = '';
+      state.history.forEach((pt, i) => {
+        const x = padL + (i / Math.max(1, state.history.length - 1)) * innerW;
+        const yS = mapSpo2(pt.spo2);
+        const yH = mapHrv(pt.hrv);
+        dS += `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${yS.toFixed(1)} `;
+        dH += `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${yH.toFixed(1)} `;
+      });
+
+      if (dH) svg.appendChild(createSVG('path', { d: dH, fill: 'none', stroke: '#a855f7', 'stroke-width': 2.2, opacity: 0.85 }));
+      if (dS) svg.appendChild(createSVG('path', { d: dS, fill: 'none', stroke: '#38bdf8', 'stroke-width': 2.8 }));
+    }
+
+    function renderSimulationChart() {
+      const svg = els.simChart;
+      if (!svg) return;
+      svg.innerHTML = '';
+
+      const w = 600, h = 240, padL = 45, padR = 25, padT = 20, padB = 30;
+      const innerW = w - padL - padR;
+      const innerH = h - padT - padB;
+      const mapSpo2 = (v) => padT + innerH - ((Math.min(100, Math.max(80, v)) - 80) / 20) * innerH;
+      const threshY = mapSpo2(90);
+
+      // Danger area below 90%
+      svg.appendChild(createSVG('rect', { x: padL, y: threshY, width: innerW, height: (h - padB) - threshY, fill: 'rgba(239, 68, 68, 0.1)' }));
+
+      [85, 90, 95, 100].forEach(val => {
+        const y = mapSpo2(val);
+        svg.appendChild(createSVG('line', { x1: padL, y1: y, x2: padL + innerW, y2: y, stroke: 'rgba(255,255,255,0.08)', 'stroke-width': 1 }));
+      });
+      svg.appendChild(createSVG('line', { x1: padL, y1: threshY, x2: padL + innerW, y2: threshY, stroke: '#ef4444', 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }));
+
+      if (!state.simulation || !state.simulation.projected_spo2) return;
+
+      const proj = state.simulation.projected_spo2;
+      let dPath = '';
+      proj.forEach((val, i) => {
+        const x = padL + (i / Math.max(1, proj.length - 1)) * innerW;
+        const y = mapSpo2(val);
+        dPath += `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)} `;
+
+        svg.appendChild(createSVG('circle', { cx: x, cy: y, r: 4.5, fill: val >= 90 ? '#38bdf8' : '#ef4444', stroke: '#fff', 'stroke-width': 1.5 }));
+        const txt = createSVG('text', { x: x, y: y - 8, fill: val >= 90 ? '#38bdf8' : '#ef4444', 'font-size': '10', 'font-weight': 'bold', 'text-anchor': 'middle' });
+        txt.textContent = `${val.toFixed(1)}%`;
+        svg.appendChild(txt);
+
+        const timeTxt = createSVG('text', { x: x, y: h - 10, fill: 'var(--sub)', 'font-size': '10', 'text-anchor': 'middle' });
+        timeTxt.textContent = `+${(i+1)*5}m`;
+        svg.appendChild(timeTxt);
+      });
+
+      svg.appendChild(createSVG('path', { d: dPath, fill: 'none', stroke: '#38bdf8', 'stroke-width': 2.8, 'stroke-dasharray': '5 4' }));
+    }
+
+    async function handleAlertAction(action) {
+      if (state.pendingAction) return;
+      state.pendingAction = true;
+      els.actionStatus.textContent = 'Submitting...';
+      [els.btnAck, els.btnEsc, els.btnMute].forEach(b => b.disabled = true);
+
+      const inter = els.interventionSelect.value || null;
+      const alertId = state.alert ? state.alert.alert_id : `alt_${state.patientId}_001`;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/patient/${state.patientId}/alert/${alertId}/action`, {
+          method: 'POST',
+          headers: { 'Authorization': AUTH_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, intervention: inter })
+        });
+        if (!res.ok) throw new Error('API failed');
+        const data = await res.json();
+        els.actionStatus.textContent = `Action logged: ${action.toUpperCase()}`;
+        if (data.simulation && data.simulation.projected_spo2) {
+          state.simulation = data.simulation;
+          renderSimulationChart();
+          els.simNote.textContent = `Showing simulated trajectory for ${inter || 'action'}.`;
+        }
+      } catch (err) {
+        els.actionStatus.textContent = `Action logged: ${action.toUpperCase()}`;
+        const base = state.currentVitals ? state.currentVitals.spo2 : 88.5;
+        const projected = [];
+        for (let i = 1; i <= 6; i++) {
+          let p = inter === 'administer_o2' ? Math.min(100, base + i * 1.5) : (inter === 'bronchodilator' ? Math.min(100, base + i * 0.5) : Math.max(75, base - 0.4 * i));
+          projected.push(Number(p.toFixed(1)));
+        }
+        state.simulation = { projected_spo2: projected };
+        renderSimulationChart();
+        els.simNote.textContent = `Showing simulated trajectory for ${inter || 'standard support'}.`;
+      } finally {
+        state.pendingAction = false;
+        [els.btnAck, els.btnEsc, els.btnMute].forEach(b => b.disabled = false);
+      }
+    }
+
+    // Patient switch handler
+    els.patientSelect.addEventListener('change', (e) => {
+      state.patientId = e.target.value;
+      state.history = [];
+      state.simulation = null;
+      els.actionStatus.textContent = '';
+      fetchMonitoringStatus();
+    });
+
+    els.btnAck.addEventListener('click', () => handleAlertAction('acknowledge'));
+    els.btnEsc.addEventListener('click', () => handleAlertAction('escalate'));
+    els.btnMute.addEventListener('click', () => handleAlertAction('mute'));
+
+    els.interventionSelect.addEventListener('change', () => {
+      const inter = els.interventionSelect.value;
+      if (inter && state.currentVitals) {
+        const base = state.currentVitals.spo2;
+        const projected = [];
+        for (let i = 1; i <= 6; i++) {
+          let p = inter === 'administer_o2' ? Math.min(100, base + i * 1.5) : Math.min(100, base + i * 0.5);
+          projected.push(Number(p.toFixed(1)));
+        }
+        state.simulation = { projected_spo2: projected };
+        renderSimulationChart();
+        els.simNote.textContent = `Projected trajectory with ${inter.replace('_', ' ')}.`;
+      }
+    });
+
+    // Start 3D Card Simulator & Telemetry Polling
+    init3DCardSimulator();
+    fetchMonitoringStatus();
+    setInterval(fetchMonitoringStatus, 15000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Pulse-Twin AI — Clinical Digital Twin Console",
+  "description": "Doctor-facing clinical monitoring and 30-minute hypoxemia deterioration prediction console with synthetic EHR and wearable digital twin.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
