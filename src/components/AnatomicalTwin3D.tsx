@@ -638,13 +638,12 @@ export const AnatomicalTwin3D: React.FC<AnatomicalTwin3DProps> = ({
         rightLungRef.current.scale.set(lungExpansion, lungExpansion * 1.05, lungExpansion);
 
         // Adjust lung color tint: healthy cyan vs hypoxemic cyanosis warning
-        const lMat = lungMesh.material as THREE.MeshPhysicalMaterial;
         if (isCrit) {
-          lMat.color.setHex(0x0284c7); // Deep desaturated cyanosis
-          lMat.emissive.setHex(0x450a0a); // Red alert inner distress
+          lungMat.color.setHex(0x0284c7); // Deep desaturated cyanosis
+          lungMat.emissive.setHex(0x450a0a); // Red alert inner distress
         } else {
-          lMat.color.setHex(0x38bdf8);
-          lMat.emissive.setHex(0x082f49);
+          lungMat.color.setHex(0x38bdf8);
+          lungMat.emissive.setHex(0x082f49);
         }
       }
 
